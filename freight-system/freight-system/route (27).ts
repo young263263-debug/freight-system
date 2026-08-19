@@ -1,0 +1,30 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db";
+import { otherIncome } from "@/db/schema";
+import { desc } from "drizzle-orm";
+import { requireStaff, badRequest } from "@/lib/api-helpers";
+
+export async function GET() {
+  const { res } = await requireStaff();
+  if (res) return res;
+  const rows = await db.select().from(otherIncome).orderBy(desc(otherIncome.incomeDate));
+  return NextResponse.json(rows);
+}
+
+export async function POST(req: NextRequest) {
+  const { res } = await requireStaff();
+  if (res) return res;
+  const body = await req.json().catch(() => null);
+  if (!body?.incomeDate || body?.amount === undefined) return badRequest("請輸入日期與金額");
+
+  const [row] = await db
+    .insert(otherIncome)
+    .values({
+      incomeDate: body.incomeDate,
+      amount: String(body.amount),
+      description: body.description || null,
+    })
+    .returning();
+
+  return NextResponse.json(row, { status: 201 });
+}
