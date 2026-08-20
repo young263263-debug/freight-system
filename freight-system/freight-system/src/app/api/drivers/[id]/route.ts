@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { drivers } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { requireSession, badRequest, notFound } from "@/lib/api-helpers";
+import { requireStaff, badRequest, notFound } from "@/lib/api-helpers";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { res } = await requireSession();
+  const { res } = await requireStaff();
   if (res) return res;
   const { id } = await params;
   const [row] = await db.select().from(drivers).where(eq(drivers.id, Number(id)));
@@ -20,7 +20,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { res } = await requireSession();
+  const { res } = await requireStaff();
   if (res) return res;
   const { id } = await params;
   const body = await req.json().catch(() => null);
@@ -49,7 +49,7 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { res } = await requireSession();
+  const { res } = await requireStaff();
   if (res) return res;
   const { id } = await params;
   await db.delete(drivers).where(eq(drivers.id, Number(id)));

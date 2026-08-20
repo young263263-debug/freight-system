@@ -3,6 +3,23 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
+import { Users2, Plus, X } from "lucide-react";
+import {
+  PageHeader,
+  Card,
+  Button,
+  Field,
+  Input,
+  Select,
+  Table,
+  Thead,
+  Th,
+  Tr,
+  Td,
+  Badge,
+  EmptyState,
+  LoadingState,
+} from "@/components/ui";
 
 type Driver = {
   id: number;
@@ -63,86 +80,86 @@ export default function DriversPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">司機管理</h1>
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-        >
-          {showForm ? "取消" : "+ 新增司機"}
-        </button>
-      </div>
+      <PageHeader
+        icon={<Users2 size={20} />}
+        title="司機管理"
+        action={
+          <Button onClick={() => setShowForm((s) => !s)}>
+            {showForm ? <X size={15} /> : <Plus size={15} />}
+            {showForm ? "取消" : "新增司機"}
+          </Button>
+        }
+      />
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-lg p-5 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">姓名 *</label>
-            <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">電話</label>
-            <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">底薪</label>
-            <input type="number" step="0.01" value={form.baseSalary} onChange={(e) => setForm({ ...form, baseSalary: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">抽成比例 (0~1，例如 0.15 代表 15%)</label>
-            <input type="number" step="0.0001" value={form.commissionRate} onChange={(e) => setForm({ ...form, commissionRate: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">支出費用預設由誰負擔</label>
-            <select value={form.defaultCostBearer} onChange={(e) => setForm({ ...form, defaultCostBearer: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm">
-              <option value="driver">司機身上</option>
-              <option value="company">公司成本</option>
-            </select>
-          </div>
-          {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
-          <div className="sm:col-span-2">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
-              儲存
-            </button>
-          </div>
-        </form>
+        <Card className="p-5 mb-6">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="姓名" required>
+              <Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </Field>
+            <Field label="電話">
+              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            </Field>
+            <Field label="底薪">
+              <Input type="number" step="0.01" value={form.baseSalary} onChange={(e) => setForm({ ...form, baseSalary: e.target.value })} />
+            </Field>
+            <Field label="抽成比例 (0~1，例如 0.15 代表 15%)">
+              <Input type="number" step="0.0001" value={form.commissionRate} onChange={(e) => setForm({ ...form, commissionRate: e.target.value })} />
+            </Field>
+            <Field label="支出費用預設由誰負擔" className="sm:col-span-2">
+              <Select value={form.defaultCostBearer} onChange={(e) => setForm({ ...form, defaultCostBearer: e.target.value })}>
+                <option value="driver">司機身上</option>
+                <option value="company">公司成本</option>
+              </Select>
+            </Field>
+            {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
+            <div className="sm:col-span-2">
+              <Button type="submit">儲存</Button>
+            </div>
+          </form>
+        </Card>
       )}
 
-      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 text-left">
-            <tr>
-              <th className="px-4 py-2.5">姓名</th>
-              <th className="px-4 py-2.5">電話</th>
-              <th className="px-4 py-2.5">底薪</th>
-              <th className="px-4 py-2.5">抽成比例</th>
-              <th className="px-4 py-2.5">支出負擔</th>
-              <th className="px-4 py-2.5"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">載入中...</td></tr>
-            )}
-            {!loading && drivers.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">尚無司機資料</td></tr>
-            )}
-            {drivers.map((d) => (
-              <tr key={d.id} className="border-t border-slate-100 hover:bg-slate-50">
-                <td className="px-4 py-2.5">
-                  <Link href={`/drivers/${d.id}`} className="text-blue-600 hover:underline">{d.name}</Link>
-                </td>
-                <td className="px-4 py-2.5">{d.phone || "-"}</td>
-                <td className="px-4 py-2.5">{formatCurrency(d.baseSalary)}</td>
-                <td className="px-4 py-2.5">{(parseFloat(d.commissionRate) * 100).toFixed(2)}%</td>
-                <td className="px-4 py-2.5">{d.defaultCostBearer === "driver" ? "司機身上" : "公司成本"}</td>
-                <td className="px-4 py-2.5 text-right">
-                  <button onClick={() => handleDelete(d.id)} className="text-red-500 hover:underline text-xs">刪除</button>
-                </td>
+      <Card>
+        {loading ? (
+          <LoadingState />
+        ) : drivers.length === 0 ? (
+          <EmptyState icon={<Users2 size={32} />} message="尚無司機資料" />
+        ) : (
+          <Table>
+            <Thead>
+              <tr>
+                <Th>姓名</Th>
+                <Th>電話</Th>
+                <Th>底薪</Th>
+                <Th>抽成比例</Th>
+                <Th>支出負擔</Th>
+                <Th></Th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </Thead>
+            <tbody>
+              {drivers.map((d) => (
+                <Tr key={d.id}>
+                  <Td>
+                    <Link href={`/drivers/${d.id}`} className="font-medium text-indigo-600 hover:underline">{d.name}</Link>
+                  </Td>
+                  <Td>{d.phone || "-"}</Td>
+                  <Td>{formatCurrency(d.baseSalary)}</Td>
+                  <Td>{(parseFloat(d.commissionRate) * 100).toFixed(2)}%</Td>
+                  <Td>
+                    <Badge tone={d.defaultCostBearer === "driver" ? "slate" : "indigo"}>
+                      {d.defaultCostBearer === "driver" ? "司機身上" : "公司成本"}
+                    </Badge>
+                  </Td>
+                  <Td className="text-right">
+                    <button onClick={() => handleDelete(d.id)} className="text-red-500 hover:underline text-xs">刪除</button>
+                  </Td>
+                </Tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </Card>
     </div>
   );
 }

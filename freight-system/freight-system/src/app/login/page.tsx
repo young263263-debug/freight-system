@@ -2,6 +2,8 @@
 
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Truck } from "lucide-react";
+import { Field, Input, Button } from "@/components/ui";
 
 function LoginForm() {
   const router = useRouter();
@@ -35,40 +37,36 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="w-full max-w-sm bg-white shadow rounded-lg p-8 border border-slate-200">
-        <h1 className="text-xl font-bold text-slate-800 mb-1">運費系統</h1>
-        <p className="text-sm text-slate-500 mb-6">請登入以繼續</p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">帳號 (Email)</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50 px-4">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center mb-6">
+          <div className="h-12 w-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 mb-3">
+            <Truck size={24} />
           </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">密碼</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded py-2 text-sm font-medium disabled:opacity-60"
-          >
-            {loading ? "登入中..." : "登入"}
-          </button>
-        </form>
+          <h1 className="text-xl font-bold text-slate-900">運費系統</h1>
+          <p className="text-sm text-slate-500 mt-1">請登入以繼續</p>
+        </div>
+        <div className="bg-white shadow-xl shadow-slate-200/60 rounded-2xl p-8 border border-slate-200/70">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Field label="帳號 (Email)" required>
+              <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
+            </Field>
+            <Field label="密碼" required>
+              <Input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Field>
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+            )}
+            <Button type="submit" disabled={loading} className="w-full" size="md">
+              {loading ? "登入中..." : "登入"}
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );

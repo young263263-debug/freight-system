@@ -1,7 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { formatCurrency, currentYearMonth } from "@/lib/utils";
+import { Truck, Plus, X, Layers } from "lucide-react";
+import {
+  PageHeader,
+  Card,
+  Button,
+  Field,
+  Input,
+  Select,
+  Table,
+  Thead,
+  Th,
+  Tr,
+  Td,
+  Badge,
+  EmptyState,
+  LoadingState,
+} from "@/components/ui";
 
 type Driver = { id: number; name: string; defaultCostBearer: "driver" | "company" };
 type Customer = { id: number; name: string };
@@ -18,6 +36,7 @@ type Order = {
   interestDeduction: string;
   otherDeduction: string;
   costBearer: "driver" | "company";
+  isSteelPlateOrder: boolean;
 };
 
 const emptyForm = {
@@ -30,6 +49,7 @@ const emptyForm = {
   interestDeduction: "0",
   otherDeduction: "0",
   costBearer: "driver",
+  isSteelPlateOrder: false,
 };
 
 export default function FreightOrdersPage() {
@@ -93,122 +113,147 @@ export default function FreightOrdersPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">運費單</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
-          {showForm ? "取消" : "+ 新增運費單"}
-        </button>
-      </div>
+      <PageHeader
+        icon={<Truck size={20} />}
+        title="運費單"
+        action={
+          <Button onClick={() => setShowForm((s) => !s)}>
+            {showForm ? <X size={15} /> : <Plus size={15} />}
+            {showForm ? "取消" : "新增運費單"}
+          </Button>
+        }
+      />
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-lg p-5 mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">日期 *</label>
-            <input required type="date" value={form.orderDate} onChange={(e) => setForm({ ...form, orderDate: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">司機 *</label>
-            <select required value={form.driverId} onChange={(e) => handleDriverChange(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm">
-              <option value="">請選擇</option>
-              {drivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">客戶</label>
-            <select value={form.customerId} onChange={(e) => setForm({ ...form, customerId: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm">
-              <option value="">未指定</option>
-              {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-          <div className="sm:col-span-3">
-            <label className="block text-sm text-slate-600 mb-1">貨物內容 / 備註</label>
-            <input value={form.itemDescription} onChange={(e) => setForm({ ...form, itemDescription: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">運費金額</label>
-            <input type="number" step="0.01" value={form.freightAmount} onChange={(e) => setForm({ ...form, freightAmount: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">扣發票稅</label>
-            <input type="number" step="0.01" value={form.invoiceTaxDeduction} onChange={(e) => setForm({ ...form, invoiceTaxDeduction: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">扣利息</label>
-            <input type="number" step="0.01" value={form.interestDeduction} onChange={(e) => setForm({ ...form, interestDeduction: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">車主支出費用</label>
-            <input type="number" step="0.01" value={form.otherDeduction} onChange={(e) => setForm({ ...form, otherDeduction: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">此費用由誰負擔</label>
-            <select value={form.costBearer} onChange={(e) => setForm({ ...form, costBearer: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm">
-              <option value="driver">司機身上（從薪資扣除）</option>
-              <option value="company">公司成本（不影響薪資）</option>
-            </select>
-          </div>
-          {error && <p className="text-sm text-red-600 sm:col-span-3">{error}</p>}
-          <div className="sm:col-span-3">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">儲存</button>
-          </div>
-        </form>
+        <Card className="p-5 mb-6">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Field label="日期" required>
+              <Input required type="date" value={form.orderDate} onChange={(e) => setForm({ ...form, orderDate: e.target.value })} />
+            </Field>
+            <Field label="司機" required>
+              <Select required value={form.driverId} onChange={(e) => handleDriverChange(e.target.value)}>
+                <option value="">請選擇</option>
+                {drivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+              </Select>
+            </Field>
+            <Field label="客戶">
+              <Select value={form.customerId} onChange={(e) => setForm({ ...form, customerId: e.target.value })}>
+                <option value="">未指定</option>
+                {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </Select>
+            </Field>
+            <Field label="貨物內容 / 備註" className="sm:col-span-3">
+              <Input value={form.itemDescription} onChange={(e) => setForm({ ...form, itemDescription: e.target.value })} />
+            </Field>
+
+            <div className="sm:col-span-3 flex items-center gap-2 bg-indigo-50/60 rounded-lg px-3 py-2.5">
+              <input
+                type="checkbox"
+                id="isSteelPlateOrder"
+                checked={form.isSteelPlateOrder}
+                onChange={(e) => setForm({ ...form, isSteelPlateOrder: e.target.checked })}
+              />
+              <label htmlFor="isSteelPlateOrder" className="text-sm text-slate-700">
+                這是特殊鐵板訂單（儲存後可到明細頁輸入長寬厚重量，系統自動計算運費金額）
+              </label>
+            </div>
+
+            {!form.isSteelPlateOrder && (
+              <Field label="運費金額">
+                <Input type="number" step="0.01" value={form.freightAmount} onChange={(e) => setForm({ ...form, freightAmount: e.target.value })} />
+              </Field>
+            )}
+            <Field label="扣發票稅">
+              <Input type="number" step="0.01" value={form.invoiceTaxDeduction} onChange={(e) => setForm({ ...form, invoiceTaxDeduction: e.target.value })} />
+            </Field>
+            <Field label="扣利息">
+              <Input type="number" step="0.01" value={form.interestDeduction} onChange={(e) => setForm({ ...form, interestDeduction: e.target.value })} />
+            </Field>
+            <Field label="車主支出費用">
+              <Input type="number" step="0.01" value={form.otherDeduction} onChange={(e) => setForm({ ...form, otherDeduction: e.target.value })} />
+            </Field>
+            <Field label="此費用由誰負擔" className="sm:col-span-2">
+              <Select value={form.costBearer} onChange={(e) => setForm({ ...form, costBearer: e.target.value })}>
+                <option value="driver">司機身上（從薪資扣除）</option>
+                <option value="company">公司成本（不影響薪資）</option>
+              </Select>
+            </Field>
+            {error && <p className="text-sm text-red-600 sm:col-span-3">{error}</p>}
+            <div className="sm:col-span-3">
+              <Button type="submit">儲存</Button>
+            </div>
+          </form>
+        </Card>
       )}
 
       <div className="flex items-center gap-2 mb-3">
         <label className="text-sm text-slate-600">篩選月份：</label>
-        <input type="month" value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="rounded border border-slate-300 px-3 py-1.5 text-sm" />
+        <Input type="month" value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="w-40" />
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 text-left">
-            <tr>
-              <th className="px-4 py-2.5">日期</th>
-              <th className="px-4 py-2.5">司機</th>
-              <th className="px-4 py-2.5">客戶</th>
-              <th className="px-4 py-2.5">運費</th>
-              <th className="px-4 py-2.5">扣發票稅</th>
-              <th className="px-4 py-2.5">扣利息</th>
-              <th className="px-4 py-2.5">車主支出</th>
-              <th className="px-4 py-2.5">負擔方</th>
-              <th className="px-4 py-2.5"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && <tr><td colSpan={9} className="px-4 py-6 text-center text-slate-400">載入中...</td></tr>}
-            {!loading && filteredOrders.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-6 text-center text-slate-400">此月份尚無運費單</td></tr>
+      <Card>
+        {loading ? (
+          <LoadingState />
+        ) : filteredOrders.length === 0 ? (
+          <EmptyState icon={<Truck size={32} />} message="此月份尚無運費單" />
+        ) : (
+          <Table>
+            <Thead>
+              <tr>
+                <Th>日期</Th>
+                <Th>司機</Th>
+                <Th>客戶</Th>
+                <Th>運費</Th>
+                <Th>扣發票稅</Th>
+                <Th>扣利息</Th>
+                <Th>車主支出</Th>
+                <Th>負擔方</Th>
+                <Th></Th>
+              </tr>
+            </Thead>
+            <tbody>
+              {filteredOrders.map((o) => (
+                <Tr key={o.id}>
+                  <Td className="whitespace-nowrap">{o.orderDate}</Td>
+                  <Td>{o.driverName}</Td>
+                  <Td>{o.customerName || "-"}</Td>
+                  <Td>
+                    {formatCurrency(o.freightAmount)}
+                    {o.isSteelPlateOrder && (
+                      <Link href={`/freight-orders/${o.id}`} className="ml-2 inline-flex items-center gap-1 text-indigo-600 hover:underline text-xs">
+                        <Layers size={12} /> 鐵板明細
+                      </Link>
+                    )}
+                  </Td>
+                  <Td>{formatCurrency(o.invoiceTaxDeduction)}</Td>
+                  <Td>{formatCurrency(o.interestDeduction)}</Td>
+                  <Td>{formatCurrency(o.otherDeduction)}</Td>
+                  <Td>
+                    <Badge tone={o.costBearer === "driver" ? "slate" : "indigo"}>
+                      {o.costBearer === "driver" ? "司機" : "公司"}
+                    </Badge>
+                  </Td>
+                  <Td className="text-right">
+                    <button onClick={() => handleDelete(o.id)} className="text-red-500 hover:underline text-xs">刪除</button>
+                  </Td>
+                </Tr>
+              ))}
+            </tbody>
+            {filteredOrders.length > 0 && (
+              <tfoot>
+                <tr className="border-t border-slate-200 font-semibold bg-slate-50/80">
+                  <td className="px-4 py-3" colSpan={3}>合計</td>
+                  <td className="px-4 py-3">{formatCurrency(filteredOrders.reduce((s, o) => s + parseFloat(o.freightAmount), 0))}</td>
+                  <td className="px-4 py-3">{formatCurrency(filteredOrders.reduce((s, o) => s + parseFloat(o.invoiceTaxDeduction), 0))}</td>
+                  <td className="px-4 py-3">{formatCurrency(filteredOrders.reduce((s, o) => s + parseFloat(o.interestDeduction), 0))}</td>
+                  <td className="px-4 py-3">{formatCurrency(filteredOrders.reduce((s, o) => s + parseFloat(o.otherDeduction), 0))}</td>
+                  <td colSpan={2}></td>
+                </tr>
+              </tfoot>
             )}
-            {filteredOrders.map((o) => (
-              <tr key={o.id} className="border-t border-slate-100 hover:bg-slate-50">
-                <td className="px-4 py-2.5 whitespace-nowrap">{o.orderDate}</td>
-                <td className="px-4 py-2.5">{o.driverName}</td>
-                <td className="px-4 py-2.5">{o.customerName || "-"}</td>
-                <td className="px-4 py-2.5">{formatCurrency(o.freightAmount)}</td>
-                <td className="px-4 py-2.5">{formatCurrency(o.invoiceTaxDeduction)}</td>
-                <td className="px-4 py-2.5">{formatCurrency(o.interestDeduction)}</td>
-                <td className="px-4 py-2.5">{formatCurrency(o.otherDeduction)}</td>
-                <td className="px-4 py-2.5">{o.costBearer === "driver" ? "司機" : "公司"}</td>
-                <td className="px-4 py-2.5 text-right">
-                  <button onClick={() => handleDelete(o.id)} className="text-red-500 hover:underline text-xs">刪除</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          {filteredOrders.length > 0 && (
-            <tfoot>
-              <tr className="border-t border-slate-200 font-semibold bg-slate-50">
-                <td className="px-4 py-2.5" colSpan={3}>合計</td>
-                <td className="px-4 py-2.5">{formatCurrency(filteredOrders.reduce((s, o) => s + parseFloat(o.freightAmount), 0))}</td>
-                <td className="px-4 py-2.5">{formatCurrency(filteredOrders.reduce((s, o) => s + parseFloat(o.invoiceTaxDeduction), 0))}</td>
-                <td className="px-4 py-2.5">{formatCurrency(filteredOrders.reduce((s, o) => s + parseFloat(o.interestDeduction), 0))}</td>
-                <td className="px-4 py-2.5">{formatCurrency(filteredOrders.reduce((s, o) => s + parseFloat(o.otherDeduction), 0))}</td>
-                <td colSpan={2}></td>
-              </tr>
-            </tfoot>
-          )}
-        </table>
-      </div>
+          </Table>
+        )}
+      </Card>
     </div>
   );
 }

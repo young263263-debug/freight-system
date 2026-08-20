@@ -2,7 +2,9 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, Users2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { PageHeader, Card, Button, Field, Input, Select, Textarea, Table, Thead, Th, Tr, Td } from "@/components/ui";
 
 type Driver = {
   id: number;
@@ -70,95 +72,87 @@ export default function DriverDetailPage({ params }: { params: Promise<{ id: str
     load();
   }
 
-  if (!driver) return <p className="text-slate-400">載入中...</p>;
+  if (!driver) return <p className="text-slate-400 text-sm">載入中...</p>;
 
   return (
     <div className="max-w-2xl">
-      <button onClick={() => router.push("/drivers")} className="text-sm text-slate-500 hover:underline mb-4">
-        ← 返回司機列表
+      <button onClick={() => router.push("/drivers")} className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-4">
+        <ArrowLeft size={14} /> 返回司機列表
       </button>
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">司機資料：{driver.name}</h1>
+      <PageHeader icon={<Users2 size={20} />} title={`司機資料：${driver.name}`} />
 
-      <form onSubmit={handleSave} className="bg-white border border-slate-200 rounded-lg p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        <div>
-          <label className="block text-sm text-slate-600 mb-1">姓名 *</label>
-          <input required value={driver.name} onChange={(e) => setDriver({ ...driver, name: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label className="block text-sm text-slate-600 mb-1">電話</label>
-          <input value={driver.phone ?? ""} onChange={(e) => setDriver({ ...driver, phone: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label className="block text-sm text-slate-600 mb-1">身分證字號</label>
-          <input value={driver.idNumber ?? ""} onChange={(e) => setDriver({ ...driver, idNumber: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label className="block text-sm text-slate-600 mb-1">底薪</label>
-          <input type="number" step="0.01" value={driver.baseSalary} onChange={(e) => setDriver({ ...driver, baseSalary: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label className="block text-sm text-slate-600 mb-1">抽成比例 (0~1)</label>
-          <input type="number" step="0.0001" value={driver.commissionRate} onChange={(e) => setDriver({ ...driver, commissionRate: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label className="block text-sm text-slate-600 mb-1">支出費用預設由誰負擔</label>
-          <select value={driver.defaultCostBearer} onChange={(e) => setDriver({ ...driver, defaultCostBearer: e.target.value as "driver" | "company" })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm">
-            <option value="driver">司機身上</option>
-            <option value="company">公司成本</option>
-          </select>
-        </div>
-        <div className="sm:col-span-2 flex items-center gap-2">
-          <input type="checkbox" checked={driver.active} onChange={(e) => setDriver({ ...driver, active: e.target.checked })} id="active" />
-          <label htmlFor="active" className="text-sm text-slate-600">在職中</label>
-        </div>
-        <div className="sm:col-span-2">
-          <label className="block text-sm text-slate-600 mb-1">備註</label>
-          <textarea value={driver.notes ?? ""} onChange={(e) => setDriver({ ...driver, notes: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" rows={2} />
-        </div>
-        {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
-        <div className="sm:col-span-2">
-          <button type="submit" disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-60">
-            {saving ? "儲存中..." : "儲存變更"}
-          </button>
-        </div>
-      </form>
+      <Card className="p-5 mb-8">
+        <form onSubmit={handleSave} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="姓名" required>
+            <Input required value={driver.name} onChange={(e) => setDriver({ ...driver, name: e.target.value })} />
+          </Field>
+          <Field label="電話">
+            <Input value={driver.phone ?? ""} onChange={(e) => setDriver({ ...driver, phone: e.target.value })} />
+          </Field>
+          <Field label="身分證字號">
+            <Input value={driver.idNumber ?? ""} onChange={(e) => setDriver({ ...driver, idNumber: e.target.value })} />
+          </Field>
+          <Field label="底薪">
+            <Input type="number" step="0.01" value={driver.baseSalary} onChange={(e) => setDriver({ ...driver, baseSalary: e.target.value })} />
+          </Field>
+          <Field label="抽成比例 (0~1)">
+            <Input type="number" step="0.0001" value={driver.commissionRate} onChange={(e) => setDriver({ ...driver, commissionRate: e.target.value })} />
+          </Field>
+          <Field label="支出費用預設由誰負擔">
+            <Select value={driver.defaultCostBearer} onChange={(e) => setDriver({ ...driver, defaultCostBearer: e.target.value as "driver" | "company" })}>
+              <option value="driver">司機身上</option>
+              <option value="company">公司成本</option>
+            </Select>
+          </Field>
+          <div className="sm:col-span-2 flex items-center gap-2">
+            <input type="checkbox" checked={driver.active} onChange={(e) => setDriver({ ...driver, active: e.target.checked })} id="active" />
+            <label htmlFor="active" className="text-sm text-slate-600">在職中</label>
+          </div>
+          <Field label="備註" className="sm:col-span-2">
+            <Textarea value={driver.notes ?? ""} onChange={(e) => setDriver({ ...driver, notes: e.target.value })} rows={2} />
+          </Field>
+          {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
+          <div className="sm:col-span-2">
+            <Button type="submit" disabled={saving}>{saving ? "儲存中..." : "儲存變更"}</Button>
+          </div>
+        </form>
+      </Card>
 
-      <h2 className="font-semibold text-slate-700 mb-3">每月固定扣款（例如：勞保、健保）</h2>
-      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden mb-4">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 text-left">
-            <tr>
-              <th className="px-4 py-2.5">項目</th>
-              <th className="px-4 py-2.5">金額</th>
-              <th className="px-4 py-2.5"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {deductions.length === 0 && (
-              <tr><td colSpan={3} className="px-4 py-4 text-center text-slate-400">尚無固定扣款項目</td></tr>
-            )}
-            {deductions.map((d) => (
-              <tr key={d.id} className="border-t border-slate-100">
-                <td className="px-4 py-2.5">{d.name}</td>
-                <td className="px-4 py-2.5">{formatCurrency(d.amount)}</td>
-                <td className="px-4 py-2.5 text-right">
-                  <button onClick={() => handleDeleteDeduction(d.id)} className="text-red-500 hover:underline text-xs">刪除</button>
-                </td>
+      <h2 className="font-semibold text-slate-800 text-sm mb-3">每月固定扣款（例如：勞保、健保）</h2>
+      <Card className="mb-4">
+        {deductions.length === 0 ? (
+          <p className="px-4 py-4 text-center text-slate-400 text-sm">尚無固定扣款項目</p>
+        ) : (
+          <Table>
+            <Thead>
+              <tr>
+                <Th>項目</Th>
+                <Th>金額</Th>
+                <Th></Th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <form onSubmit={handleAddDeduction} className="flex gap-2 items-end">
-        <div>
-          <label className="block text-xs text-slate-500 mb-1">項目名稱</label>
-          <input value={newDeduction.name} onChange={(e) => setNewDeduction({ ...newDeduction, name: e.target.value })} placeholder="例如：勞健保" className="rounded border border-slate-300 px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label className="block text-xs text-slate-500 mb-1">金額</label>
-          <input type="number" step="0.01" value={newDeduction.amount} onChange={(e) => setNewDeduction({ ...newDeduction, amount: e.target.value })} className="rounded border border-slate-300 px-3 py-2 text-sm w-32" />
-        </div>
-        <button type="submit" className="px-4 py-2 bg-slate-800 text-white rounded text-sm hover:bg-slate-900">新增</button>
+            </Thead>
+            <tbody>
+              {deductions.map((d) => (
+                <Tr key={d.id}>
+                  <Td>{d.name}</Td>
+                  <Td>{formatCurrency(d.amount)}</Td>
+                  <Td className="text-right">
+                    <button onClick={() => handleDeleteDeduction(d.id)} className="text-red-500 hover:underline text-xs">刪除</button>
+                  </Td>
+                </Tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </Card>
+      <form onSubmit={handleAddDeduction} className="flex gap-2 items-end flex-wrap">
+        <Field label="項目名稱">
+          <Input value={newDeduction.name} onChange={(e) => setNewDeduction({ ...newDeduction, name: e.target.value })} placeholder="例如：勞健保" />
+        </Field>
+        <Field label="金額">
+          <Input type="number" step="0.01" value={newDeduction.amount} onChange={(e) => setNewDeduction({ ...newDeduction, amount: e.target.value })} className="w-32" />
+        </Field>
+        <Button type="submit" variant="secondary">新增</Button>
       </form>
     </div>
   );

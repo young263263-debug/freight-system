@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { formatCurrency, currentYearMonth } from "@/lib/utils";
+import { LineChart, Plus, X } from "lucide-react";
+import { PageHeader, Card, Button, Field, Input, LoadingState } from "@/components/ui";
 
 type Report = {
   yearMonth: string;
@@ -64,39 +66,39 @@ export default function ProfitLossPage() {
 
   return (
     <div className="max-w-2xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">損益表</h1>
-        <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="rounded border border-slate-300 px-3 py-1.5 text-sm" />
-      </div>
+      <PageHeader
+        icon={<LineChart size={20} />}
+        title="損益表"
+        action={<Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-40" />}
+      />
 
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <h2 className="font-semibold text-slate-700 text-sm">其他收入紀錄</h2>
-          <button onClick={() => setShowIncomeForm((s) => !s)} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded text-xs hover:bg-slate-200">
-            {showIncomeForm ? "取消" : "+ 新增其他收入"}
-          </button>
+          <Button variant="secondary" size="sm" onClick={() => setShowIncomeForm((s) => !s)}>
+            {showIncomeForm ? <X size={13} /> : <Plus size={13} />} 新增其他收入
+          </Button>
         </div>
         {showIncomeForm && (
-          <form onSubmit={handleAddIncome} className="bg-white border border-slate-200 rounded-lg p-4 mb-3 flex gap-2 items-end flex-wrap">
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">日期</label>
-              <input type="date" value={incomeForm.incomeDate} onChange={(e) => setIncomeForm({ ...incomeForm, incomeDate: e.target.value })} className="rounded border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">金額</label>
-              <input type="number" step="0.01" value={incomeForm.amount} onChange={(e) => setIncomeForm({ ...incomeForm, amount: e.target.value })} className="rounded border border-slate-300 px-3 py-2 text-sm w-32" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">說明</label>
-              <input value={incomeForm.description} onChange={(e) => setIncomeForm({ ...incomeForm, description: e.target.value })} className="rounded border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">新增</button>
-          </form>
+          <Card className="p-4 mb-3">
+            <form onSubmit={handleAddIncome} className="flex gap-2 items-end flex-wrap">
+              <Field label="日期">
+                <Input type="date" value={incomeForm.incomeDate} onChange={(e) => setIncomeForm({ ...incomeForm, incomeDate: e.target.value })} />
+              </Field>
+              <Field label="金額">
+                <Input type="number" step="0.01" value={incomeForm.amount} onChange={(e) => setIncomeForm({ ...incomeForm, amount: e.target.value })} className="w-32" />
+              </Field>
+              <Field label="說明">
+                <Input value={incomeForm.description} onChange={(e) => setIncomeForm({ ...incomeForm, description: e.target.value })} />
+              </Field>
+              <Button type="submit">新增</Button>
+            </form>
+          </Card>
         )}
         {incomes.filter((i) => i.incomeDate.slice(0, 7) === month).length > 0 && (
-          <div className="bg-white border border-slate-200 rounded-lg overflow-hidden text-sm">
+          <Card className="text-sm overflow-hidden">
             {incomes.filter((i) => i.incomeDate.slice(0, 7) === month).map((i) => (
-              <div key={i.id} className="flex justify-between items-center px-4 py-2 border-b border-slate-100 last:border-b-0">
+              <div key={i.id} className="flex justify-between items-center px-4 py-2.5 border-b border-slate-100 last:border-b-0">
                 <span className="text-slate-600">{i.incomeDate} {i.description || ""}</span>
                 <div className="flex items-center gap-3">
                   <span>{formatCurrency(i.amount)}</span>
@@ -104,14 +106,14 @@ export default function ProfitLossPage() {
                 </div>
               </div>
             ))}
-          </div>
+          </Card>
         )}
       </div>
 
       {loading || !report ? (
-        <p className="text-slate-400">計算中...</p>
+        <LoadingState />
       ) : (
-        <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-5 text-sm">
+        <Card className="p-6 space-y-5 text-sm">
           <Section title="營業收入">
             <Line label="運費收入" value={report.freightRevenue} />
             <Line label="其他收入" value={report.otherIncomeTotal} />
@@ -135,11 +137,11 @@ export default function ProfitLossPage() {
             <Line label="費用合計" value={report.totalExpense} bold />
           </Section>
 
-          <div className={`flex justify-between items-center rounded-lg px-4 py-3 font-bold text-base ${report.netProfit >= 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
+          <div className={`flex justify-between items-center rounded-xl px-4 py-3.5 font-bold text-base ${report.netProfit >= 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
             <span>本期損益</span>
             <span>{formatCurrency(report.netProfit)}</span>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

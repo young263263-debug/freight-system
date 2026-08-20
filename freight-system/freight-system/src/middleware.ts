@@ -7,6 +7,10 @@ const SECRET = new TextEncoder().encode(
 const COOKIE_NAME = "freight_session";
 const PUBLIC_PATHS = ["/login"];
 
+// Paths the restricted "driver" role is allowed to reach.
+const DRIVER_ALLOWED_PAGES = ["/my-payroll", "/account"];
+const DRIVER_ALLOWED_API_PREFIXES = ["/api/my-payroll", "/api/auth/"];
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -20,23 +24,34 @@ export async function middleware(req: NextRequest) {
   }
 
   const token = req.cookies.get(COOKIE_NAME)?.value;
-  let valid = false;
+  let payload: Record<string, unknown> | null = null;
   if (token) {
     try {
-      await jwtVerify(token, SECRET);
-      valid = true;
+      const verified = await jwtVerify(token, SECRET);
+      payload = verified.payload as Record<string, unknown>;
     } catch {
-      valid = false;
+      payload = null;
     }
   }
 
-  if (!valid) {
+  if (!payload) {
     if (pathname.startsWith("/api")) {
       return NextResponse.json({ error: "未登入" }, { status: 401 });
     }
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  if (payload.role === "driver") {
+    const isAllowedPage = DRIVER_ALLOWED_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+    const isAllowedApi = DRIVER_ALLOWED_API_PREFIXES.some((p) => pathname.startsWith(p));
+    if (!pathname.startsWith("/api") && !isAllowedPage) {
+      return NextResponse.redirect(new URL("/my-payroll", req.url));
+    }
+    if (pathname.startsWith("/api") && !isAllowedApi) {
+      return NextResponse.json({ error: "此帳號無此權限" }, { status: 403 });
+    }
   }
 
   return NextResponse.next();

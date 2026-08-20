@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { formatCurrency, formatNumber, currentYearMonth } from "@/lib/utils";
+import { Wallet } from "lucide-react";
+import { PageHeader, Card, Input, LoadingState, EmptyState } from "@/components/ui";
 
 type PayrollLine = {
   driver: { id: number; name: string };
@@ -35,19 +37,20 @@ export default function PayrollPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">薪資結算</h1>
-        <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="rounded border border-slate-300 px-3 py-1.5 text-sm" />
-      </div>
+      <PageHeader
+        icon={<Wallet size={20} />}
+        title="薪資結算"
+        action={<Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-40" />}
+      />
 
       {loading ? (
-        <p className="text-slate-400">計算中...</p>
+        <LoadingState />
       ) : lines.length === 0 ? (
-        <p className="text-slate-400">此月份無資料</p>
+        <Card><EmptyState icon={<Wallet size={32} />} message="此月份無資料" /></Card>
       ) : (
         <div className="space-y-4">
           {lines.map((l) => (
-            <div key={l.driver.id} className="bg-white border border-slate-200 rounded-lg p-5">
+            <Card key={l.driver.id} className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-slate-800">{l.driver.name}</h3>
                 <span className="text-lg font-bold text-emerald-600">{formatCurrency(l.netPay)}</span>
@@ -83,9 +86,9 @@ export default function PayrollPage() {
                   <span>{formatCurrency(l.netPay)}</span>
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
-          <div className="bg-slate-800 text-white rounded-lg p-5 flex justify-between items-center">
+          <div className="bg-slate-900 text-white rounded-xl p-5 flex justify-between items-center shadow-sm">
             <span className="font-medium">當期薪資合計</span>
             <span className="text-xl font-bold">{formatCurrency(totalNetPay)}</span>
           </div>

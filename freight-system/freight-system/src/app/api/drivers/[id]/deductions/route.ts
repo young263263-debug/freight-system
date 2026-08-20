@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { driverRecurringDeductions } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { requireSession, badRequest } from "@/lib/api-helpers";
+import { requireStaff, badRequest } from "@/lib/api-helpers";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { res } = await requireSession();
+  const { res } = await requireStaff();
   if (res) return res;
   const { id } = await params;
   const rows = await db
@@ -22,7 +22,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { res } = await requireSession();
+  const { res } = await requireStaff();
   if (res) return res;
   const { id } = await params;
   const body = await req.json().catch(() => null);

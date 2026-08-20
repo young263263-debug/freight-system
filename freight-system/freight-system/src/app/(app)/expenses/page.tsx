@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
+import { TrendingDown, Plus, X } from "lucide-react";
+import { PageHeader, Card, Button, Field, Input, Select, Table, Thead, Th, Tr, Td, Badge, EmptyState, LoadingState } from "@/components/ui";
 
 type Category = { id: number; name: string; type: "成本" | "費用" };
 type Expense = {
@@ -99,117 +101,117 @@ export default function ExpensesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">費用管理</h1>
+      <PageHeader icon={<TrendingDown size={20} />} title="費用管理" />
 
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-semibold text-slate-700">費用分類</h2>
-        <button onClick={() => setShowCatForm((s) => !s)} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded text-xs hover:bg-slate-200">
-          {showCatForm ? "取消" : "+ 新增分類"}
-        </button>
+        <h2 className="font-semibold text-slate-700 text-sm">費用分類</h2>
+        <Button variant="secondary" size="sm" onClick={() => setShowCatForm((s) => !s)}>
+          {showCatForm ? <X size={13} /> : <Plus size={13} />} 新增分類
+        </Button>
       </div>
       {showCatForm && (
-        <form onSubmit={handleAddCategory} className="bg-white border border-slate-200 rounded-lg p-4 mb-4 flex gap-2 items-end">
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">分類名稱</label>
-            <input required value={catForm.name} onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} className="rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">類型</label>
-            <select value={catForm.type} onChange={(e) => setCatForm({ ...catForm, type: e.target.value })} className="rounded border border-slate-300 px-3 py-2 text-sm">
-              <option value="費用">費用（管銷）</option>
-              <option value="成本">成本（營業成本）</option>
-            </select>
-          </div>
-          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">新增</button>
-        </form>
+        <Card className="p-4 mb-4">
+          <form onSubmit={handleAddCategory} className="flex gap-2 items-end flex-wrap">
+            <Field label="分類名稱">
+              <Input required value={catForm.name} onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} />
+            </Field>
+            <Field label="類型">
+              <Select value={catForm.type} onChange={(e) => setCatForm({ ...catForm, type: e.target.value })}>
+                <option value="費用">費用（管銷）</option>
+                <option value="成本">成本（營業成本）</option>
+              </Select>
+            </Field>
+            <Button type="submit">新增</Button>
+          </form>
+        </Card>
       )}
       <div className="flex flex-wrap gap-2 mb-8">
         {categories.map((c) => (
-          <span key={c.id} className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 text-xs px-3 py-1.5 rounded-full">
+          <span key={c.id} className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 text-xs px-3 py-1.5 rounded-full">
             {c.name} <span className="text-slate-400">({c.type})</span>
-            <button onClick={() => handleDeleteCategory(c.id)} className="ml-1 text-red-400 hover:text-red-600">×</button>
+            <button onClick={() => handleDeleteCategory(c.id)} className="text-red-400 hover:text-red-600">×</button>
           </span>
         ))}
         {categories.length === 0 && <p className="text-sm text-slate-400">尚無分類，請先新增</p>}
       </div>
 
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-semibold text-slate-700">費用紀錄</h2>
-        <button onClick={() => setShowExpForm((s) => !s)} className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
-          {showExpForm ? "取消" : "+ 新增費用"}
-        </button>
+        <h2 className="font-semibold text-slate-700 text-sm">費用紀錄</h2>
+        <Button onClick={() => setShowExpForm((s) => !s)}>
+          {showExpForm ? <X size={15} /> : <Plus size={15} />}
+          {showExpForm ? "取消" : "新增費用"}
+        </Button>
       </div>
 
       {showExpForm && (
-        <form onSubmit={handleAddExpense} className="bg-white border border-slate-200 rounded-lg p-5 mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">日期 *</label>
-            <input required type="date" value={expForm.expenseDate} onChange={(e) => setExpForm({ ...expForm, expenseDate: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">分類 *</label>
-            <select required value={expForm.categoryId} onChange={(e) => setExpForm({ ...expForm, categoryId: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm">
-              <option value="">請選擇</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm text-slate-600 mb-1">金額 *</label>
-            <input required type="number" step="0.01" value={expForm.amount} onChange={(e) => setExpForm({ ...expForm, amount: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div className="sm:col-span-3">
-            <label className="block text-sm text-slate-600 mb-1">說明</label>
-            <input value={expForm.description} onChange={(e) => setExpForm({ ...expForm, description: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="isRecurring" checked={expForm.isRecurring} onChange={(e) => setExpForm({ ...expForm, isRecurring: e.target.checked })} />
-            <label htmlFor="isRecurring" className="text-sm text-slate-600">設為每月固定費用（自動計入之後每個月）</label>
-          </div>
-          {expForm.isRecurring && (
-            <div>
-              <label className="block text-sm text-slate-600 mb-1">每月扣款日</label>
-              <input type="number" min={1} max={28} value={expForm.recurringDay} onChange={(e) => setExpForm({ ...expForm, recurringDay: e.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+        <Card className="p-5 mb-6">
+          <form onSubmit={handleAddExpense} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Field label="日期" required>
+              <Input required type="date" value={expForm.expenseDate} onChange={(e) => setExpForm({ ...expForm, expenseDate: e.target.value })} />
+            </Field>
+            <Field label="分類" required>
+              <Select required value={expForm.categoryId} onChange={(e) => setExpForm({ ...expForm, categoryId: e.target.value })}>
+                <option value="">請選擇</option>
+                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </Select>
+            </Field>
+            <Field label="金額" required>
+              <Input required type="number" step="0.01" value={expForm.amount} onChange={(e) => setExpForm({ ...expForm, amount: e.target.value })} />
+            </Field>
+            <Field label="說明" className="sm:col-span-3">
+              <Input value={expForm.description} onChange={(e) => setExpForm({ ...expForm, description: e.target.value })} />
+            </Field>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="isRecurring" checked={expForm.isRecurring} onChange={(e) => setExpForm({ ...expForm, isRecurring: e.target.checked })} />
+              <label htmlFor="isRecurring" className="text-sm text-slate-600">設為每月固定費用（自動計入之後每個月）</label>
             </div>
-          )}
-          {error && <p className="text-sm text-red-600 sm:col-span-3">{error}</p>}
-          <div className="sm:col-span-3">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">儲存</button>
-          </div>
-        </form>
+            {expForm.isRecurring && (
+              <Field label="每月扣款日">
+                <Input type="number" min={1} max={28} value={expForm.recurringDay} onChange={(e) => setExpForm({ ...expForm, recurringDay: e.target.value })} />
+              </Field>
+            )}
+            {error && <p className="text-sm text-red-600 sm:col-span-3">{error}</p>}
+            <div className="sm:col-span-3">
+              <Button type="submit">儲存</Button>
+            </div>
+          </form>
+        </Card>
       )}
 
-      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 text-left">
-            <tr>
-              <th className="px-4 py-2.5">日期</th>
-              <th className="px-4 py-2.5">分類</th>
-              <th className="px-4 py-2.5">金額</th>
-              <th className="px-4 py-2.5">說明</th>
-              <th className="px-4 py-2.5">固定費用</th>
-              <th className="px-4 py-2.5"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">載入中...</td></tr>}
-            {!loading && expenses.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">尚無費用紀錄</td></tr>
-            )}
-            {expenses.map((e) => (
-              <tr key={e.id} className="border-t border-slate-100 hover:bg-slate-50">
-                <td className="px-4 py-2.5 whitespace-nowrap">{e.expenseDate}</td>
-                <td className="px-4 py-2.5">{categoryName(e.categoryId)}</td>
-                <td className="px-4 py-2.5">{formatCurrency(e.amount)}</td>
-                <td className="px-4 py-2.5">{e.description || "-"}</td>
-                <td className="px-4 py-2.5">{e.isRecurring ? `每月 ${e.recurringDay} 號` : "-"}</td>
-                <td className="px-4 py-2.5 text-right">
-                  <button onClick={() => handleDeleteExpense(e.id)} className="text-red-500 hover:underline text-xs">刪除</button>
-                </td>
+      <Card>
+        {loading ? (
+          <LoadingState />
+        ) : expenses.length === 0 ? (
+          <EmptyState icon={<TrendingDown size={32} />} message="尚無費用紀錄" />
+        ) : (
+          <Table>
+            <Thead>
+              <tr>
+                <Th>日期</Th>
+                <Th>分類</Th>
+                <Th>金額</Th>
+                <Th>說明</Th>
+                <Th>固定費用</Th>
+                <Th></Th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </Thead>
+            <tbody>
+              {expenses.map((e) => (
+                <Tr key={e.id}>
+                  <Td className="whitespace-nowrap">{e.expenseDate}</Td>
+                  <Td>{categoryName(e.categoryId)}</Td>
+                  <Td>{formatCurrency(e.amount)}</Td>
+                  <Td>{e.description || "-"}</Td>
+                  <Td>{e.isRecurring ? <Badge tone="indigo">每月 {e.recurringDay} 號</Badge> : "-"}</Td>
+                  <Td className="text-right">
+                    <button onClick={() => handleDeleteExpense(e.id)} className="text-red-500 hover:underline text-xs">刪除</button>
+                  </Td>
+                </Tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </Card>
     </div>
   );
 }

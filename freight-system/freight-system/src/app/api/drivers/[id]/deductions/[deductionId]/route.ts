@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { driverRecurringDeductions } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { requireSession } from "@/lib/api-helpers";
+import { requireStaff } from "@/lib/api-helpers";
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; deductionId: string }> }
 ) {
-  const { res } = await requireSession();
+  const { res } = await requireStaff();
   if (res) return res;
   const { deductionId } = await params;
   const body = await req.json().catch(() => null);
@@ -30,7 +30,7 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string; deductionId: string }> }
 ) {
-  const { res } = await requireSession();
+  const { res } = await requireStaff();
   if (res) return res;
   const { deductionId } = await params;
   await db
